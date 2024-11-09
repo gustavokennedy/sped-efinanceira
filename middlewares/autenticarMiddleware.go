@@ -29,7 +29,7 @@ func AutenticarMiddleware(next http.Handler) http.Handler {
 				return nil, jwt.ErrSignatureInvalid
 			}
 			// Substitua "chave-secreta" pela sua chave secreta real usada para assinar o token JWT
-			return []byte("oc-energia"), nil
+			return []byte("sped-efinanceira"), nil
 		})
 
 		if err != nil {
