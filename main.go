@@ -73,6 +73,12 @@ func main() {
 	}
 	defer sentry.Flush(2 * time.Second)
 
+	// Configura os repositórios
+	usuarioRepo, perfilRepo := seeders.ConfiguraRepositorios()
+
+	// Executa o seeder para perfis e usuários
+	seeders.SeedUsuarios(&usuarioRepo, &perfilRepo)
+
 	// Cria um roteador principal com Mux
 	router := routes.ConfiguraRotas(client)
 
@@ -82,12 +88,6 @@ func main() {
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"}),
 		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
 	)
-
-	// Configuração dos repositórios
-	perfilRepo := seeders.ConfiguraRepositorios()
-
-	// Criação das Seeders
-	seeders.SeedPerfis(&perfilRepo)
 
 	// Obtém o IP local
 	ip, err := getLocalIP()

@@ -104,11 +104,11 @@ func (ur *PerfilRepositorio) ListarPerfilPorID(id string) (*models.Perfil, error
 	return &perfil, nil
 }
 
-// Buscar Descrição
-func (r *PerfilRepositorio) BuscarPerfilPorDescricao(descricao string) (*models.Perfil, error) {
+// Buscar Nome
+func (r *PerfilRepositorio) BuscarPerfilPorNome(nome string) (*models.Perfil, error) {
 	collection := r.db.Collection("perfis")
 
-	filter := bson.M{"descricao": descricao}
+	filter := bson.M{"nome": nome}
 
 	var perfil models.Perfil
 	err := collection.FindOne(context.Background(), filter).Decode(&perfil)

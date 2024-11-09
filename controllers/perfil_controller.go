@@ -75,6 +75,55 @@ func (uc *PerfilController) CriarPerfil(w http.ResponseWriter, r *http.Request) 
 
 // Listar
 
+// BuscarPerfilPorNome busca um perfil pelo nome
+func (uc *PerfilController) BuscarPerfilPorNome(w http.ResponseWriter, r *http.Request) {
+	// Para query parameter:
+	// nome := r.URL.Query().Get("nome")
+
+	// Para path parameter:
+	nome := mux.Vars(r)["nome"]
+
+	if nome == "" {
+		RespostaComErro := common.RespostaComErro{
+			Error:   "Nome não especificado",
+			Message: "O parâmetro 'nome' é obrigatório.",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(RespostaComErro)
+		return
+	}
+
+	log.Printf("Buscando perfil com nome: %s", nome)
+
+	perfil, err := uc.repo.BuscarPerfilPorNome(nome)
+	if err != nil {
+		log.Println(err)
+		RespostaComErro := common.RespostaComErro{
+			Error:   "Falha ao buscar Perfil",
+			Message: err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(RespostaComErro)
+		return
+	}
+
+	if perfil == nil {
+		RespostaComErro := common.RespostaComErro{
+			Error:   "Perfil não encontrado",
+			Message: "Nenhum perfil encontrado com o nome especificado.",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(RespostaComErro)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(perfil)
+}
+
 // Listar todos Perfis
 func (uc *PerfilController) ListarTodosPerfis(w http.ResponseWriter, r *http.Request) {
 	perfis, err := uc.repo.ListarTodosPerfis()

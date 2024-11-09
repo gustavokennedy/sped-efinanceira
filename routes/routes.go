@@ -76,25 +76,29 @@ func ConfiguraRotas(client *mongo.Client) *mux.Router {
 	dbURL := os.Getenv("DB_URL")
 	dbName := os.Getenv("DB_NAME")
 
-	repo, err := repositories.NovoPerfilRepositorio(dbURL, dbName)
+	// Repositories
+	usuarioRepo, err := repositories.NovoUsuarioRepository(dbURL, dbName)
 	if err != nil {
-		log.Fatal("Erro ao conectar ao banco de dados:", err)
+		log.Fatal("Erro ao conectar ao repositório de usuários:", err)
+	}
+
+	perfilRepo, err := repositories.NovoPerfilRepositorio(dbURL, dbName)
+	if err != nil {
+		log.Fatal("Erro ao conectar ao repositório de perfis:", err)
+	}
+
+	authRepo, err := repositories.NovoAutenticarRepository(dbURL, dbName)
+	if err != nil {
+		log.Fatal("Erro ao conectar ao repositório de autenticação:", err)
 	}
 
 	// Inicializar o controlador de perfil
-	perfilController := controllers.NovoPerfilController(repo)
+	perfilController := controllers.NovoPerfilController(perfilRepo)
+	usuarioController := controllers.NovoUsuarioController(usuarioRepo, perfilRepo, authRepo)
 
 	router := mux.NewRouter()
 
-	// Definir rotas
-	router.HandleFunc("/enviar-email", EnviarEmailHandler)
-
-	router.HandleFunc("/perfis", perfilController.CriarPerfil).Methods("POST")
-	router.HandleFunc("/perfis", perfilController.ListarTodosPerfis).Methods("GET")
-	router.HandleFunc("/perfis/{id}", perfilController.ListarPerfilPorID).Methods("GET")
-	router.HandleFunc("/perfis/{id}", perfilController.EditarPerfil).Methods("PUT")
-	router.HandleFunc("/perfis/{id}", perfilController.DeletarPerfil).Methods("DELETE")
-
+	// Rotas Publicas
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		dbStatus := "503"
 		if database.CheckConnection(client) {
@@ -108,6 +112,30 @@ func ConfiguraRotas(client *mongo.Client) *mux.Router {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	})
+
+	router.HandleFunc("/enviar-email", EnviarEmailHandler)
+	router.HandleFunc("/logar", usuarioController.AutenticarUsuario).Methods("POST").Name("AutenticarUsuario")
+
+	// Rotas Privadas
+
+	// Grupo de rotas privadas com middleware de autenticação
+	privateRoutes := router.PathPrefix("/").Subrouter()
+	privateRoutes.Use(middlewares.AutenticarMiddleware)
+
+	// Rotas para perfis
+	privateRoutes.HandleFunc("/perfis", perfilController.CriarPerfil).Methods("POST").Name("CriarPerfil")
+	privateRoutes.HandleFunc("/perfis", perfilController.ListarTodosPerfis).Methods("GET").Name("ListarPerfil")
+	privateRoutes.HandleFunc("/perfis/{id}", perfilController.ListarPerfilPorID).Methods("GET").Name("ListarPerfil")
+	privateRoutes.HandleFunc("/perfis/{id}", perfilController.EditarPerfil).Methods("PUT").Name("EditarPerfil")
+	privateRoutes.HandleFunc("/perfis/{id}", perfilController.DeletarPerfil).Methods("DELETE").Name("DeletarPerfil")
+
+	// Rotas para usuários
+	privateRoutes.HandleFunc("/profile", usuarioController.ObterInformacoesUsuarioLogado).Methods("GET").Name("ListarUsuarioLogado")
+	privateRoutes.HandleFunc("/usuarios", usuarioController.ListarUsuarios).Methods("GET").Name("ListarUsuarios")
+	privateRoutes.HandleFunc("/usuarios/{id}", usuarioController.ListarUsuarioPorID).Methods("GET").Name("ListarUsuariosPorID")
+	privateRoutes.HandleFunc("/usuarios", usuarioController.CriarUsuario).Methods("POST").Name("CriarUsuario")
+	privateRoutes.HandleFunc("/usuarios/{id}", usuarioController.AtualizarUsuario).Methods("PUT").Name("AtualizarUsuario")
+	privateRoutes.HandleFunc("/usuarios/{id}", usuarioController.DeletarUsuario).Methods("DELETE").Name("DeletarUsuario")
 
 	return router
 }
