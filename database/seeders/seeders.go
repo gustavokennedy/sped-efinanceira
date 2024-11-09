@@ -53,6 +53,7 @@ func SeedUsuarios(usuarioRepo *repositories.UsuarioRepositorio, perfilRepo *repo
 			Cidade:    "Aurora",
 		}
 
+		// Verifica se o usuário já existe pelo email
 		existingUser, err := usuarioRepo.BuscarUsuarioPorEmail(user.Email)
 		if err != nil {
 			log.Println("Erro ao buscar Usuário por email:", err)
@@ -60,10 +61,12 @@ func SeedUsuarios(usuarioRepo *repositories.UsuarioRepositorio, perfilRepo *repo
 		}
 
 		if existingUser != nil {
+			// Logar que o usuário já existe e retornar
 			log.Println("🌱 Seed: Usuário Gustavo já existe.")
 			return
 		}
 
+		// Verifica o perfil de administrador
 		perfilAdministrador, err := perfilRepo.BuscarPerfilPorNome("Admin")
 		if err != nil {
 			log.Println("Erro ao buscar Perfil:", err)
@@ -84,6 +87,9 @@ func SeedUsuarios(usuarioRepo *repositories.UsuarioRepositorio, perfilRepo *repo
 		}
 
 		log.Printf("🌱 Seed: Usuário '%s' criado com sucesso!", user.Nome)
+	} else {
+		// Caso o usuário já exista, pode logar isso aqui também
+		log.Println("🌱 Seed: Usuários já existem. Nenhum novo usuário criado.")
 	}
 }
 

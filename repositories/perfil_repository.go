@@ -104,21 +104,29 @@ func (ur *PerfilRepositorio) ListarPerfilPorID(id string) (*models.Perfil, error
 	return &perfil, nil
 }
 
-// Buscar Nome
-func (r *PerfilRepositorio) BuscarPerfilPorNome(nome string) (*models.Perfil, error) {
-	collection := r.db.Collection("perfis")
+// Busca um perfil pelo nome
+func (repo *PerfilRepositorio) BuscarPerfilPorNome(nome string) (*models.Perfil, error) {
+	var perfil models.Perfil
 
+	// Obtém a coleção de perfis
+	collection := repo.db.Collection("perfis")
+
+	// Filtro para buscar o perfil pelo nome
 	filter := bson.M{"nome": nome}
 
-	var perfil models.Perfil
+	// Realiza a busca no banco
 	err := collection.FindOne(context.Background(), filter).Decode(&perfil)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil // Perfil não encontrado
+			// Caso não encontre o perfil, retorna nil
+			log.Printf("Perfil '%s' não encontrado.", nome)
+			return nil, nil
 		}
+		log.Println("Erro ao buscar perfil por nome:", err)
 		return nil, err
 	}
 
+	// Retorna o perfil encontrado
 	return &perfil, nil
 }
 
