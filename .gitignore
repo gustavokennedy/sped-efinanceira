@@ -1,0 +1,40 @@
+# Diretórios e arquivos de Go
+/bin/
+/pkg/
+/vendor/
+
+# Dependências do Go Modules
+go.sum
+go.mod
+gin-bin
+logs/server.log
+
+# Diretório de cache do Go
+/.cache/
+
+# Arquivos de compilação
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Logs e perfis de teste
+*.log
+*.prof
+
+# Editor e Sistema Operacional
+*.DS_Store
+*.swp
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+node_modules/
+*.env
+
+# Testes
+*.coverprofile
+coverage.out

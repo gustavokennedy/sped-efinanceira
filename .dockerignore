@@ -1,0 +1,25 @@
+# Ignorar arquivos de compilação e binários
+**/bin
+**/pkg
+*.exe
+*.out
+*.test
+
+# Arquivos de dependências do Go
+go.sum
+go.mod
+
+# Arquivos e diretórios de cache
+.cache/
+*.log
+*.prof
+coverage.out
+
+# Ignorar arquivos de configuração e variáveis de ambiente
+*.env
+
+# Configurações de IDE e editor
+.vscode/
+.idea/
+*.swp
+*.DS_Store
